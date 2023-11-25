@@ -24,7 +24,7 @@ Pod::Spec.new do |spec|
   spec.version       = '0.0.1'
   spec.license       = { :file => '../LICENSE' }
   spec.homepage      = 'https://github.com/foamify/jxl'
-  spec.authors       = { 'Damien Wise' => 'damywise@gmail.com' }
+  spec.authors       = { 'Damien Wise' => 'mrdamywise@gmail.com' }
   spec.summary       = 'iOS/macOS Flutter bindings for jxl'
 
   spec.source              = { :path => '.' }

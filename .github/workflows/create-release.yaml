@@ -25,7 +25,7 @@ jobs:
       - name: Setup git
         run: |
           git config user.name "Damien Wise"
-          git config user.email "damywise@gmail.com"
+          git config user.email "mrdamywise@gmail.com"
       - uses: subosito/flutter-action@v2
       - uses: bluefireteam/melos-action@v2
 
