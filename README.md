@@ -1,6 +1,6 @@
 # jxl
 
-A Flutter plugin to view jxl images.
+A Dart/Flutter plugin to decode and view jxl images.
 
 Binder to the rust [jxl-oxide](https://github.com/tirr-c/jxl-oxide/) library.
 
