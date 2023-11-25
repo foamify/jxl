@@ -1,0 +1,3 @@
+[workspace]
+members = ["packages/jxl/native"]
+workspace.resolver = "2"
