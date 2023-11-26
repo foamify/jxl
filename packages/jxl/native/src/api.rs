@@ -233,10 +233,7 @@ pub fn is_jxl(jxl_bytes: Vec<u8>) -> bool {
     let reader = Cursor::new(jxl_bytes);
     let image = JxlImage::from_reader(reader);
 
-    match image {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    image.is_ok()
 }
 
 pub struct Frame {
