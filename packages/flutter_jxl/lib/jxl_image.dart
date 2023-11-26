@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -1125,6 +1126,7 @@ class MultiFrameJxlCodec implements JxlCodec {
   final String _key;
   final CropInfo? _cropInfo;
   late Completer<void> _ready;
+  late final bool isHdr;
 
   int _frameCount = 1;
   @override
@@ -1146,6 +1148,7 @@ class MultiFrameJxlCodec implements JxlCodec {
       api.initDecoder(key: _key, jxlBytes: jxlBytes).then((info) {
         _frameCount = info.imageCount;
         _durationMs = overrideDurationMs ?? info.duration.round();
+        isHdr = info.isHdr;
         _ready.complete();
       });
     } catch (e) {
@@ -1185,13 +1188,26 @@ class MultiFrameJxlCodec implements JxlCodec {
   String? _getNextFrame(void Function(ui.Image?, int) callback) {
     try {
       api.getNextFrame(key: _key, cropInfo: _cropInfo).then((frame) {
-        final (data, width, height) = (frame.data, frame.width, frame.height);
+        var (data, width, height) = (frame.data, frame.width, frame.height);
 
         var targetRgbaLength = width * height * 4;
 
         final hasAlpha = data.length == targetRgbaLength;
 
         late final Float32List? modifiedData;
+
+        print('hasalpha: $hasAlpha');
+
+        if (isHdr) {
+          data = reinhardExtendedLuminance(data, 1);
+          enhanceColor(data, 2);
+          enhanceImage(
+            data,
+            1.5,
+            0,
+            2,
+          );
+        }
 
         if (!hasAlpha) {
           modifiedData = Float32List(targetRgbaLength);
@@ -1227,5 +1243,80 @@ class MultiFrameJxlCodec implements JxlCodec {
   @override
   void dispose() {
     api.disposeDecoder(key: _key);
+  }
+}
+
+// Luminance coefficients for RGB
+const List<double> luminanceCoeffs = [0.2126, 0.7152, 0.0722];
+
+// Reinhard's Extended Luminance Tone Mapping
+Float32List reinhardExtendedLuminance(Float32List hdrImage, double maxWhiteL) {
+  double lOld = luminance(hdrImage);
+  double numerator = lOld * (1.0 + (lOld / (maxWhiteL * maxWhiteL)));
+  double lNew = numerator / (1.0 + lOld);
+  return changeLuminance(hdrImage, lNew);
+}
+
+// Calculate luminance of an image
+double luminance(Float32List image) {
+  double l = 0.0;
+  for (int i = 0; i < image.length; i += 3) {
+    l += luminanceCoeffs[0] * image[i] +
+        luminanceCoeffs[1] * image[i + 1] +
+        luminanceCoeffs[2] * image[i + 2];
+  }
+  return l / (image.length / 3);
+}
+
+// Change luminance of an image
+Float32List changeLuminance(Float32List image, double lNew) {
+  double lOld = luminance(image);
+  for (int i = 0; i < image.length; i += 3) {
+    image[i] = (image[i] * lNew) / lOld;
+    image[i + 1] = (image[i + 1] * lNew) / lOld;
+    image[i + 2] = (image[i + 2] * lNew) / lOld;
+  }
+  return image;
+}
+
+void enhanceColor(Float32List image, double saturation) {
+  for (int i = 0; i < image.length; i += 3) {
+    double r = image[i];
+    double g = image[i + 1];
+    double b = image[i + 2];
+
+    double lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    double rr = (r - lum) * saturation + lum;
+    double gg = (g - lum) * saturation + lum;
+    double bb = (b - lum) * saturation + lum;
+
+    image[i] = rr;
+    image[i + 1] = gg;
+    image[i + 2] = bb;
+  }
+}
+
+void enhanceImage(
+    Float32List image, double exposure, double offset, double gamma) {
+  for (int i = 0; i < image.length; i++) {
+    double value = image[i];
+
+    // Enhance exposure
+    value *= exposure;
+
+    // Enhance offset
+    value += offset;
+
+    // Enhance gamma
+    value = pow(value, gamma).toDouble();
+
+    // Clamp the value between 0 and 1
+    if (value < 0) {
+      value = 0;
+    } else if (value > 1) {
+      value = 1;
+    }
+
+    image[i] = value;
   }
 }

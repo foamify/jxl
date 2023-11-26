@@ -47,6 +47,7 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
         let height = image.height();
         let image_count = image.num_loaded_frames();
         let is_animation = image.image_header().metadata.animation.is_some();
+        let is_hdr = image.image_header().metadata.bit_depth.bits_per_sample() > 8;
         let mut duration = 0.0;
         if is_animation {
             let ticks = image.frame_header(0).unwrap().duration;
@@ -80,6 +81,7 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
             height,
             duration,
             image_count,
+            is_hdr,
         }) {
             Ok(result) => result,
             Err(e) => panic!("Decoder connection lost. {}", e),
@@ -216,6 +218,8 @@ fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecRespon
 
     let _data = render_image.buf().to_vec();
 
+    image.rendered_icc();
+
     return CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(_data),
@@ -249,6 +253,7 @@ pub struct JxlInfo {
     pub height: u32,
     pub image_count: usize,
     pub duration: f64,
+    pub is_hdr: bool,
 }
 
 pub struct Decoder {
