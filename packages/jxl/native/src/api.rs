@@ -99,10 +99,9 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
                 Err(e) => panic!("Decoder connection lost. {}", e),
             };
 
-            match request.command {
-                DecoderCommand::Dispose => break,
-                _ => {}
-            };
+            if let DecoderCommand::Dispose = request.command {
+                break;
+            }
         }
     });
 
@@ -122,7 +121,7 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
             },
         );
     }
-    return jxl_info;
+    jxl_info
 }
 
 pub fn reset_decoder(key: String) -> bool {
@@ -140,7 +139,7 @@ pub fn reset_decoder(key: String) -> bool {
         Err(e) => panic!("Decoder connection lost. {}", e),
     };
     decoder.response_rx.recv().unwrap();
-    return true;
+    true
 }
 
 pub fn dispose_decoder(key: String) -> bool {
@@ -159,7 +158,7 @@ pub fn dispose_decoder(key: String) -> bool {
     };
     decoder.response_rx.recv().unwrap();
     map.remove(&key);
-    return true;
+    true
 }
 
 pub fn get_next_frame(key: String, crop_info: Option<CropInfo>) -> Frame {
@@ -178,29 +177,29 @@ pub fn get_next_frame(key: String, crop_info: Option<CropInfo>) -> Frame {
         Err(e) => panic!("Decoder connection lost. {}", e),
     };
     let result = decoder.response_rx.recv().unwrap();
-    return result.frame;
+    result.frame
 }
 
 fn _dispose_decoder() -> CodecResponse {
-    return CodecResponse {
+    CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(Vec::new()),
             duration: 0.0,
             width: 0,
             height: 0,
         },
-    };
+    }
 }
 
 fn _reset_decoder() -> CodecResponse {
-    return CodecResponse {
+    CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(Vec::new()),
             duration: 0.0,
             width: 0,
             height: 0,
         },
-    };
+    }
 }
 
 fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecResponse {
@@ -220,14 +219,14 @@ fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecRespon
 
     image.rendered_icc();
 
-    return CodecResponse {
+    CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(_data),
             duration: render.duration() as f64,
             width: render_image.width() as u32,
             height: render_image.height() as u32,
         },
-    };
+    }
 }
 
 pub fn is_jxl(jxl_bytes: Vec<u8>) -> bool {
@@ -235,8 +234,8 @@ pub fn is_jxl(jxl_bytes: Vec<u8>) -> bool {
     let image = JxlImage::from_reader(reader);
 
     match image {
-        Ok(_) => return true,
-        Err(_) => return false,
+        Ok(_) => true,
+        Err(_) => false,
     }
 }
 
