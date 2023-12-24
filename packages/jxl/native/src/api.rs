@@ -13,6 +13,7 @@ use std::{
 };
 
 use flutter_rust_bridge::{frb, ZeroCopyBuffer};
+use jxl_color::{EnumColourEncoding, RenderingIntent};
 pub use jxl_oxide::{CropInfo, JxlImage};
 
 lazy_static::lazy_static! {
@@ -42,7 +43,9 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
 
     thread::spawn(move || {
         let reader = Cursor::new(jxl_bytes);
-        let image = JxlImage::from_reader(reader).expect("Failed to decode image");
+        let mut image = JxlImage::builder().read(reader).expect("Failed to decode image");
+        image.request_icc(image.rendered_icc());
+        image.request_color_encoding(EnumColourEncoding::srgb(RenderingIntent::Perceptual));
         let width = image.width();
         let height = image.height();
         let image_count = image.num_loaded_frames();
@@ -217,8 +220,6 @@ fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecRespon
 
     let _data = render_image.buf().to_vec();
 
-    image.rendered_icc();
-
     CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(_data),
@@ -231,7 +232,7 @@ fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecRespon
 
 pub fn is_jxl(jxl_bytes: Vec<u8>) -> bool {
     let reader = Cursor::new(jxl_bytes);
-    let image = JxlImage::from_reader(reader);
+    let image = JxlImage::builder().read(reader);
 
     image.is_ok()
 }
