@@ -158,6 +158,7 @@ impl support::IntoDart for JxlInfo {
             self.height.into_into_dart().into_dart(),
             self.image_count.into_into_dart().into_dart(),
             self.duration.into_into_dart().into_dart(),
+            self.is_hdr.into_into_dart().into_dart(),
         ]
         .into_dart()
     }

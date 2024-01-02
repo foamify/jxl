@@ -13,12 +13,10 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:uuid/uuid.dart';
-import 'bridge_generated.io.dart'
-    if (dart.library.html) 'bridge_generated.web.dart';
+import 'bridge_generated.io.dart' if (dart.library.html) 'bridge_generated.web.dart';
 
 abstract class Jxl {
-  Future<JxlInfo> initDecoder(
-      {required Uint8List jxlBytes, required String key, dynamic hint});
+  Future<JxlInfo> initDecoder({required Uint8List jxlBytes, required String key, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kInitDecoderConstMeta;
 
@@ -30,8 +28,7 @@ abstract class Jxl {
 
   FlutterRustBridgeTaskConstMeta get kDisposeDecoderConstMeta;
 
-  Future<Frame> getNextFrame(
-      {required String key, CropInfo? cropInfo, dynamic hint});
+  Future<Frame> getNextFrame({required String key, CropInfo? cropInfo, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGetNextFrameConstMeta;
 
@@ -73,12 +70,14 @@ class JxlInfo {
   final int height;
   final int imageCount;
   final double duration;
+  final bool isHdr;
 
   const JxlInfo({
     required this.width,
     required this.height,
     required this.imageCount,
     required this.duration,
+    required this.isHdr,
   });
 }
 
@@ -87,11 +86,9 @@ class JxlImpl implements Jxl {
   factory JxlImpl(ExternalLibrary dylib) => JxlImpl.raw(JxlPlatform(dylib));
 
   /// Only valid on web/WASM platforms.
-  factory JxlImpl.wasm(FutureOr<WasmModule> module) =>
-      JxlImpl(module as ExternalLibrary);
+  factory JxlImpl.wasm(FutureOr<WasmModule> module) => JxlImpl(module as ExternalLibrary);
   JxlImpl.raw(this._platform);
-  Future<JxlInfo> initDecoder(
-      {required Uint8List jxlBytes, required String key, dynamic hint}) {
+  Future<JxlInfo> initDecoder({required Uint8List jxlBytes, required String key, dynamic hint}) {
     var arg0 = _platform.api2wire_uint_8_list(jxlBytes);
     var arg1 = _platform.api2wire_String(key);
     return _platform.executeNormal(FlutterRustBridgeTask(
@@ -99,15 +96,20 @@ class JxlImpl implements Jxl {
       parseSuccessData: _wire2api_jxl_info,
       parseErrorData: null,
       constMeta: kInitDecoderConstMeta,
-      argValues: [jxlBytes, key],
+      argValues: [
+        jxlBytes,
+        key
+      ],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kInitDecoderConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
+  FlutterRustBridgeTaskConstMeta get kInitDecoderConstMeta => const FlutterRustBridgeTaskConstMeta(
         debugName: "init_decoder",
-        argNames: ["jxlBytes", "key"],
+        argNames: [
+          "jxlBytes",
+          "key"
+        ],
       );
 
   Future<bool> resetDecoder({required String key, dynamic hint}) {
@@ -117,15 +119,18 @@ class JxlImpl implements Jxl {
       parseSuccessData: _wire2api_bool,
       parseErrorData: null,
       constMeta: kResetDecoderConstMeta,
-      argValues: [key],
+      argValues: [
+        key
+      ],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kResetDecoderConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
+  FlutterRustBridgeTaskConstMeta get kResetDecoderConstMeta => const FlutterRustBridgeTaskConstMeta(
         debugName: "reset_decoder",
-        argNames: ["key"],
+        argNames: [
+          "key"
+        ],
       );
 
   Future<bool> disposeDecoder({required String key, dynamic hint}) {
@@ -135,36 +140,42 @@ class JxlImpl implements Jxl {
       parseSuccessData: _wire2api_bool,
       parseErrorData: null,
       constMeta: kDisposeDecoderConstMeta,
-      argValues: [key],
+      argValues: [
+        key
+      ],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kDisposeDecoderConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
+  FlutterRustBridgeTaskConstMeta get kDisposeDecoderConstMeta => const FlutterRustBridgeTaskConstMeta(
         debugName: "dispose_decoder",
-        argNames: ["key"],
+        argNames: [
+          "key"
+        ],
       );
 
-  Future<Frame> getNextFrame(
-      {required String key, CropInfo? cropInfo, dynamic hint}) {
+  Future<Frame> getNextFrame({required String key, CropInfo? cropInfo, dynamic hint}) {
     var arg0 = _platform.api2wire_String(key);
     var arg1 = _platform.api2wire_opt_box_autoadd_crop_info(cropInfo);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) =>
-          _platform.inner.wire_get_next_frame(port_, arg0, arg1),
+      callFfi: (port_) => _platform.inner.wire_get_next_frame(port_, arg0, arg1),
       parseSuccessData: _wire2api_frame,
       parseErrorData: null,
       constMeta: kGetNextFrameConstMeta,
-      argValues: [key, cropInfo],
+      argValues: [
+        key,
+        cropInfo
+      ],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kGetNextFrameConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
+  FlutterRustBridgeTaskConstMeta get kGetNextFrameConstMeta => const FlutterRustBridgeTaskConstMeta(
         debugName: "get_next_frame",
-        argNames: ["key", "cropInfo"],
+        argNames: [
+          "key",
+          "cropInfo"
+        ],
       );
 
   Future<bool> isJxl({required Uint8List jxlBytes, dynamic hint}) {
@@ -174,15 +185,18 @@ class JxlImpl implements Jxl {
       parseSuccessData: _wire2api_bool,
       parseErrorData: null,
       constMeta: kIsJxlConstMeta,
-      argValues: [jxlBytes],
+      argValues: [
+        jxlBytes
+      ],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kIsJxlConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
+  FlutterRustBridgeTaskConstMeta get kIsJxlConstMeta => const FlutterRustBridgeTaskConstMeta(
         debugName: "is_jxl",
-        argNames: ["jxlBytes"],
+        argNames: [
+          "jxlBytes"
+        ],
       );
 
   void dispose() {
@@ -212,8 +226,7 @@ class JxlImpl implements Jxl {
 
   Frame _wire2api_frame(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 4) throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return Frame(
       data: _wire2api_ZeroCopyBuffer_Float32List(arr[0]),
       duration: _wire2api_f64(arr[1]),
@@ -224,13 +237,13 @@ class JxlImpl implements Jxl {
 
   JxlInfo _wire2api_jxl_info(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 5) throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
     return JxlInfo(
       width: _wire2api_u32(arr[0]),
       height: _wire2api_u32(arr[1]),
       imageCount: _wire2api_usize(arr[2]),
       duration: _wire2api_f64(arr[3]),
+      isHdr: _wire2api_bool(arr[4]),
     );
   }
 

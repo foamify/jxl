@@ -10,8 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'bridge_generated.dart';
 export 'bridge_generated.dart';
 
-class JxlPlatform extends FlutterRustBridgeBase<JxlWire>
-    with FlutterRustBridgeSetupMixin {
+class JxlPlatform extends FlutterRustBridgeBase<JxlWire> with FlutterRustBridgeSetupMixin {
   JxlPlatform(FutureOr<WasmModule> dylib) : super(JxlWire(dylib)) {
     setupMixinConstructor();
   }
@@ -61,42 +60,29 @@ external JxlWasmModule get wasmModule;
 class JxlWasmModule implements WasmModule {
   external Object /* Promise */ call([String? moduleName]);
   external JxlWasmModule bind(dynamic thisArg, String moduleName);
-  external dynamic /* void */ wire_init_decoder(
-      NativePortType port_, Uint8List jxl_bytes, String key);
+  external dynamic /* void */ wire_init_decoder(NativePortType port_, Uint8List jxl_bytes, String key);
 
-  external dynamic /* void */ wire_reset_decoder(
-      NativePortType port_, String key);
+  external dynamic /* void */ wire_reset_decoder(NativePortType port_, String key);
 
-  external dynamic /* void */ wire_dispose_decoder(
-      NativePortType port_, String key);
+  external dynamic /* void */ wire_dispose_decoder(NativePortType port_, String key);
 
-  external dynamic /* void */ wire_get_next_frame(
-      NativePortType port_, String key, List<dynamic>? crop_info);
+  external dynamic /* void */ wire_get_next_frame(NativePortType port_, String key, List<dynamic>? crop_info);
 
-  external dynamic /* void */ wire_is_jxl(
-      NativePortType port_, Uint8List jxl_bytes);
+  external dynamic /* void */ wire_is_jxl(NativePortType port_, Uint8List jxl_bytes);
 }
 
 // Section: WASM wire connector
 
 class JxlWire extends FlutterRustBridgeWasmWireBase<JxlWasmModule> {
-  JxlWire(FutureOr<WasmModule> module)
-      : super(WasmModule.cast<JxlWasmModule>(module));
+  JxlWire(FutureOr<WasmModule> module) : super(WasmModule.cast<JxlWasmModule>(module));
 
-  void wire_init_decoder(
-          NativePortType port_, Uint8List jxl_bytes, String key) =>
-      wasmModule.wire_init_decoder(port_, jxl_bytes, key);
+  void wire_init_decoder(NativePortType port_, Uint8List jxl_bytes, String key) => wasmModule.wire_init_decoder(port_, jxl_bytes, key);
 
-  void wire_reset_decoder(NativePortType port_, String key) =>
-      wasmModule.wire_reset_decoder(port_, key);
+  void wire_reset_decoder(NativePortType port_, String key) => wasmModule.wire_reset_decoder(port_, key);
 
-  void wire_dispose_decoder(NativePortType port_, String key) =>
-      wasmModule.wire_dispose_decoder(port_, key);
+  void wire_dispose_decoder(NativePortType port_, String key) => wasmModule.wire_dispose_decoder(port_, key);
 
-  void wire_get_next_frame(
-          NativePortType port_, String key, List<dynamic>? crop_info) =>
-      wasmModule.wire_get_next_frame(port_, key, crop_info);
+  void wire_get_next_frame(NativePortType port_, String key, List<dynamic>? crop_info) => wasmModule.wire_get_next_frame(port_, key, crop_info);
 
-  void wire_is_jxl(NativePortType port_, Uint8List jxl_bytes) =>
-      wasmModule.wire_is_jxl(port_, jxl_bytes);
+  void wire_is_jxl(NativePortType port_, Uint8List jxl_bytes) => wasmModule.wire_is_jxl(port_, jxl_bytes);
 }

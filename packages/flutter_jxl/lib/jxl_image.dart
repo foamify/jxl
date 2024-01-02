@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -1125,6 +1126,7 @@ class MultiFrameJxlCodec implements JxlCodec {
   final String _key;
   final CropInfo? _cropInfo;
   late Completer<void> _ready;
+  late final bool isHdr;
 
   int _frameCount = 1;
   @override
@@ -1146,6 +1148,7 @@ class MultiFrameJxlCodec implements JxlCodec {
       api.initDecoder(key: _key, jxlBytes: jxlBytes).then((info) {
         _frameCount = info.imageCount;
         _durationMs = overrideDurationMs ?? info.duration.round();
+        isHdr = info.isHdr;
         _ready.complete();
       });
     } catch (e) {
@@ -1185,13 +1188,15 @@ class MultiFrameJxlCodec implements JxlCodec {
   String? _getNextFrame(void Function(ui.Image?, int) callback) {
     try {
       api.getNextFrame(key: _key, cropInfo: _cropInfo).then((frame) {
-        final (data, width, height) = (frame.data, frame.width, frame.height);
+        var (data, width, height) = (frame.data, frame.width, frame.height);
 
         var targetRgbaLength = width * height * 4;
 
         final hasAlpha = data.length == targetRgbaLength;
 
         late final Float32List? modifiedData;
+
+        print('hasalpha: $hasAlpha');
 
         if (!hasAlpha) {
           modifiedData = Float32List(targetRgbaLength);

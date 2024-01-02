@@ -1,0 +1,1 @@
+dart pub global run melos run build:other
