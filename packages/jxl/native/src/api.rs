@@ -13,6 +13,7 @@ use std::{
 };
 
 use flutter_rust_bridge::{frb, ZeroCopyBuffer};
+use jxl_oxide::color::EnumColourEncoding;
 pub use jxl_oxide::{CropInfo, JxlImage};
 
 lazy_static::lazy_static! {
@@ -45,7 +46,7 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
         let mut image = JxlImage::builder()
             .read(reader)
             .expect("Failed to decode image");
-        image.request_color_encoding(jxl_oxide::EnumColourEncoding::srgb(
+        image.request_color_encoding(EnumColourEncoding::srgb(
             jxl_oxide::color::RenderingIntent::Relative,
         ));
         let width = image.width();

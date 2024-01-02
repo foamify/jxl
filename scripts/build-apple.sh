@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Setup
+CURR_VERSION=jxl-v`awk '/^version: /{print $2}' packages/jxl/pubspec.yaml`
+
 BUILD_DIR=platform-build
 mkdir $BUILD_DIR
 cd $BUILD_DIR
@@ -32,6 +34,9 @@ xcodebuild -create-xcframework \
         -library ../target/aarch64-apple-ios/release/$LIBNAME \
         -output $FRAMEWORK
 zip -r $FRAMEWORK.zip $FRAMEWORK
+
+cp -f $FRAMEWORK ../packages/flutter_jxl/macos/Frameworks/$FRAMEWORK
+cp -f $FRAMEWORK.zip ../packages/flutter_jxl/macos/Frameworks/${CURR_VERSION}.zip
 
 # Cleanup
 rm -rf ios-sim-lipo mac-lipo $FRAMEWORK
