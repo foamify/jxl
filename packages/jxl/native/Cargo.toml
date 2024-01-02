@@ -11,6 +11,5 @@ flutter_rust_bridge_codegen = "1.82.4"
 
 [dependencies]
 flutter_rust_bridge = "1.82.4"
-jxl-oxide = { git = "https://github.com/tirr-c/jxl-oxide", branch = "tone-gamut-mapping" }
-jxl-color = { git = "https://github.com/tirr-c/jxl-oxide", branch = "tone-gamut-mapping" }
+jxl-oxide = { git = "https://github.com/tirr-c/jxl-oxide"}
 lazy_static = "1.4.0"
