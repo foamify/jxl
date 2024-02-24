@@ -13,6 +13,7 @@ use std::{
 };
 
 use flutter_rust_bridge::{frb, ZeroCopyBuffer};
+use jxl_oxide::color::EnumColourEncoding;
 pub use jxl_oxide::{CropInfo, JxlImage};
 
 lazy_static::lazy_static! {
@@ -42,11 +43,17 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
 
     thread::spawn(move || {
         let reader = Cursor::new(jxl_bytes);
-        let image = JxlImage::from_reader(reader).expect("Failed to decode image");
+        let mut image = JxlImage::builder()
+            .read(reader)
+            .expect("Failed to decode image");
+        image.request_color_encoding(EnumColourEncoding::srgb(
+            jxl_oxide::color::RenderingIntent::Relative,
+        ));
         let width = image.width();
         let height = image.height();
         let image_count = image.num_loaded_frames();
         let is_animation = image.image_header().metadata.animation.is_some();
+        let is_hdr = image.image_header().metadata.bit_depth.bits_per_sample() > 8;
         let mut duration = 0.0;
         if is_animation {
             let ticks = image.frame_header(0).unwrap().duration;
@@ -80,6 +87,7 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
             height,
             duration,
             image_count,
+            is_hdr,
         }) {
             Ok(result) => result,
             Err(e) => panic!("Decoder connection lost. {}", e),
@@ -97,10 +105,9 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
                 Err(e) => panic!("Decoder connection lost. {}", e),
             };
 
-            match request.command {
-                DecoderCommand::Dispose => break,
-                _ => {}
-            };
+            if let DecoderCommand::Dispose = request.command {
+                break;
+            }
         }
     });
 
@@ -120,7 +127,7 @@ pub fn init_decoder(jxl_bytes: Vec<u8>, key: String) -> JxlInfo {
             },
         );
     }
-    return jxl_info;
+    jxl_info
 }
 
 pub fn reset_decoder(key: String) -> bool {
@@ -138,7 +145,7 @@ pub fn reset_decoder(key: String) -> bool {
         Err(e) => panic!("Decoder connection lost. {}", e),
     };
     decoder.response_rx.recv().unwrap();
-    return true;
+    true
 }
 
 pub fn dispose_decoder(key: String) -> bool {
@@ -157,7 +164,7 @@ pub fn dispose_decoder(key: String) -> bool {
     };
     decoder.response_rx.recv().unwrap();
     map.remove(&key);
-    return true;
+    true
 }
 
 pub fn get_next_frame(key: String, crop_info: Option<CropInfo>) -> Frame {
@@ -176,29 +183,29 @@ pub fn get_next_frame(key: String, crop_info: Option<CropInfo>) -> Frame {
         Err(e) => panic!("Decoder connection lost. {}", e),
     };
     let result = decoder.response_rx.recv().unwrap();
-    return result.frame;
+    result.frame
 }
 
 fn _dispose_decoder() -> CodecResponse {
-    return CodecResponse {
+    CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(Vec::new()),
             duration: 0.0,
             width: 0,
             height: 0,
         },
-    };
+    }
 }
 
 fn _reset_decoder() -> CodecResponse {
-    return CodecResponse {
+    CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(Vec::new()),
             duration: 0.0,
             width: 0,
             height: 0,
         },
-    };
+    }
 }
 
 fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecResponse {
@@ -216,24 +223,21 @@ fn _get_next_frame(decoder: &mut Decoder, crop: Option<CropInfo>) -> CodecRespon
 
     let _data = render_image.buf().to_vec();
 
-    return CodecResponse {
+    CodecResponse {
         frame: Frame {
             data: ZeroCopyBuffer(_data),
             duration: render.duration() as f64,
             width: render_image.width() as u32,
             height: render_image.height() as u32,
         },
-    };
+    }
 }
 
 pub fn is_jxl(jxl_bytes: Vec<u8>) -> bool {
     let reader = Cursor::new(jxl_bytes);
-    let image = JxlImage::from_reader(reader);
+    let image = JxlImage::builder().read(reader);
 
-    match image {
-        Ok(_) => return true,
-        Err(_) => return false,
-    }
+    image.is_ok()
 }
 
 pub struct Frame {
@@ -249,6 +253,7 @@ pub struct JxlInfo {
     pub height: u32,
     pub image_count: usize,
     pub duration: f64,
+    pub is_hdr: bool,
 }
 
 pub struct Decoder {
